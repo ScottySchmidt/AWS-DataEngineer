@@ -5,7 +5,7 @@ A four-stage pipeline on AWS — **ingest → store → analyze → deploy-as-co
 Uses S3, Lambda, SQS, EventBridge, IAM, and CDK (Python). Mirrors real-world data pipeline flows for scalability and easy maintenance.  
 
 ## Three Deployment Methods
-- A. Local Jupyter Notebook (Python CDK)
+- A. Local Jupyter Notebook (Python CDK) - Preferred Method 
 - B. AWS CloudShell (Python CDK)  
 - C. GitHub Actions CI/CD *(automated deploys — in process)*
 
