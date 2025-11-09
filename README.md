@@ -1,6 +1,5 @@
 # AWS Data Engineering Pipeline (Four-Part) 
-**Note:** Code is not publically shared due to both company (top five Data Engineeer Company) and academic (Illinois State University) confidentially agreements. 
-Instructions are kept general and purposely changed some. 
+**Note:** Detailed code and architecture diagrams are not publicly shared due to confidentiality agreements. Instructions have been generalized and modified for illustrative purposes.
 
 A four-stage pipeline on AWS — **ingest → store → analyze → deploy-as-code**.  
 Uses S3, Lambda, SQS, EventBridge, IAM, and CDK (Python). Mirrors real-world data pipeline flows for scalability and easy maintenance.  
