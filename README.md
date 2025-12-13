@@ -1,5 +1,5 @@
 # AWS Data Engineer Pipeline  
-The following is a top-5 consulting firm’s cloud data engineering intership project challenge. This document intentionally omits any mention of external companies following academic guidelines. The architecture follows a four-part pattern: ingest → store → analyze → deploy.
+The following is a top five company for cloud data engineering intership project challenge. This document intentionally omits any mention of external companies following academic guidelines. The architecture follows a four-part pattern: ingest → store → analyze → deploy.
 
 Scott Schmidt — Illinois State University — Masters CS Program Final Project IT497
 
