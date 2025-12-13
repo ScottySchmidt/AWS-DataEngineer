@@ -1,5 +1,5 @@
 # AWS Data Engineer Pipeline  
-The following is a top-5 consulting firm’s cloud data engineering intership project challenge. This document intentionally omits any mention of external companies or institutional partnerships, following academic guidelines. The system automatically ingests data, stores and processes it, and produces analytics outputs, all deployed through Infrastructure as Code (AWS CDK in Python). The architecture follows a four-part pattern: ingest → store → analyze → deploy.
+The following is a top-5 consulting firm’s cloud data engineering intership project challenge. This document intentionally omits any mention of external companies following academic guidelines. The architecture follows a four-part pattern: ingest → store → analyze → deploy.
 
 Scott Schmidt — Illinois State University — IT497
 
@@ -19,11 +19,12 @@ The design focuses on:
 1. **Jupyter Notebook — API Ingestion (Local Sync Version)**  
    - Uses the **BLS public API** (standard datasets + bulk files)  
    - Fetches BLS time-series data from `https://download.bls.gov/pub/time.series/pr/`  
-   - Uses compliant `User-Agent` headers  
+   - Uses compliant `User-Agent` headers
+   - Add a User-Agent header to your request with contact information will comply with the BLS data policies to access data.
    - Hashing to detect file changes and avoid duplicate uploads  
    - Cleans and formats JSON/CSV before upload  
    - Enhanced Sync Mode automatically adds, updates, and deletes files in S3
-   - Adding a User-Agent header to your request with contact information will comply with the BLS data policies to access data.
+  
 
 2. **AWS Lambda — API → S3**  
    Serverless function that retrieves data from an external API and stores JSON files in S3.
