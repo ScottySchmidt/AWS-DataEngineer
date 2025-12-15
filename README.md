@@ -116,8 +116,7 @@ How could you add information to your programmatic access requests to let BLS co
 
 ## Future Enhancements
 - Replace the processing Lambda with AWS Glue or AWS Step Functions for complex orchestration. 
-- Publish curated datasets to Amazon Athena or Redshift Serverless for SQL-based analytics. 
-- Add Amazon QuickSight dashboards or Streamlit apps for stakeholder reporting. 
+- Publish curated datasets to Amazon Athena or Redshift Serverless for SQL-based analytics.  
 - Integrate with AWS Lake Formation for advanced governance and fine-grained permissions. 
 - Introduce cost anomaly detection using AWS Budgets and SNS alerts.
-- Use AI as a reference tool but there will be a strong expectation to exhibit the same expertise and understanding from your submission in your interview. 
+- Use AI as a reference tool but there will be an expectation to exhibit the same expertise and understanding. 
