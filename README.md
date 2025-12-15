@@ -81,7 +81,7 @@ This quest consists of 4 different parts. Putting all 4 parts together we will h
    Part 1 and Part 2 (you can combine both in 1 lambda function). The lambda function will be scheduled to run daily.
 2. The deployment should include an SQS queue that will be populated every time the JSON file is written to S3. (Hint: [S3 - Notifications](https://docs.aws.amazon.com/AmazonS3/latest/userguide/NotificationHowTo.html))
 3. For every message on the queue - execute a Lambda function that outputs the reports from Part 3 (just logging the results of the queries would be enough. No .ipynb is required).
-
+-------------
 ### Q. What do I have to submit?
 1. Link to data in S3 and source code (Step 1)
 2. Source code (Step 2)
@@ -121,4 +121,3 @@ How could you add information to your programmatic access requests to let BLS co
 - Integrate with AWS Lake Formation for advanced governance and fine-grained permissions. 
 - Introduce cost anomaly detection using AWS Budgets and SNS alerts.
 - Use AI as a reference tool but there will be a strong expectation to exhibit the same expertise and understanding from your submission in your interview. 
-
