@@ -107,5 +107,5 @@ The design emphasizes:
    
 ---
 ### Enchanced Ideas:
-Use Amazon Redshift and Amazon Athena for SQL queries for the below:
-* https://github.com/rearc-data/analytics-quest
+Use Amazon Redshift and Amazon Athena for SQL queries using data analytics below:
+https://github.com/rearc-data/analytics-quest
