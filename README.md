@@ -17,7 +17,7 @@ This quest consists of 4 different parts. Putting all 4 parts together we will h
   The goal is to source data from different places and store it in-house.
 - Part 3 will showcase your data analytics skills. The goal is to find some interesting insights with data.
 - Lastly, Part 4 will put all the pieces together. The goal here is to showcase your experience with automation and AWS services.
-
+-------------
 #### Part 1: AWS S3 & Sourcing Datasets
 1. Republish [this open dataset](https://download.bls.gov/pub/time.series/pr/) in Amazon S3 and share with us a link.
     - You may run into 403 Forbidden errors as you test accessing this data. There is a way to comply with the BLS data access policies and re-gain access to fetch this data programatically - we have included some hints as to how to do this at the bottom of this README in the Q/A section.
