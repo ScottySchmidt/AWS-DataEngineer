@@ -1,111 +1,122 @@
-# AWS Data Engineer Pipeline
-The following project is based on a cloud data engineering internship-style challenge. This document intentionally omits any mention of external companies following academic guidelines. The system automatically ingests data, stores and processes it, and produces data analytics outputs, all deployed using Infrastructure as Code (AWS CDK in Python). The architecture follows a four-part pattern: ingest → store → analyze → deploy
+# AWS Data Engineering Pipeline  
+The following is a top-5 consulting firm’s cloud data engineering intership project challenge. This document intentionally omits any mention of external companies or institutional partnerships, following academic guidelines. The system automatically ingests data, stores and processes it, and produces analytics outputs, all deployed through Infrastructure as Code (AWS CDK in Python). The architecture follows a four-part pattern: ingest → store → analyze → deploy.
 
-Scott Schmidt — Illinois State University — IT494 
+Scott Schmidt — Illinois State University — IT497 
 
-Updated GitHub Version:  https://github.com/ScottySchmidt/AWS-DataEngineer/tree/main
+### Q. So what skills should I have?
+* Data management / data engineering concepts.
+* Programming language (python, java, scala, etc).
+* AWS knowledge (Lambda, SQS, CloudWatch logs).
+* Infrastructure-as-code (Terraform, CloudFormation, etc)
 
----
+### Q. What do I have to do?
+This quest consists of 4 different parts. Putting all 4 parts together we will have a Data Pipeline architecture.
+- Part 1 and Part 2 will showcase your skills with data management, AWS concepts, and your overall data engineering skillset.
+  The goal is to source data from different places and store it in-house.
+- Part 3 will showcase your data analytics skills. The goal is to find some interesting insights with data.
+- Lastly, Part 4 will put all the pieces together. The goal here is to showcase your experience with automation and AWS services.
 
-## Project Summary
-This pipeline pulls data from public APIs, stores it in Amazon S3, processes it with AWS Lambda, and produces outputs suitable for analytics and reporting. All components—including compute, storage, permissions, and scheduling—are provisioned automatically using the AWS CDK (Python).
+#### Part 1: AWS S3 & Sourcing Datasets
+1. Republish [this open dataset](https://download.bls.gov/pub/time.series/pr/) in Amazon S3 and share with us a link.
+    - You may run into 403 Forbidden errors as you test accessing this data. There is a way to comply with the BLS data access policies and re-gain access to fetch this data programatically - we have included some hints as to how to do this at the bottom of this README in the Q/A section.
+2. Script this process so the files in the S3 bucket are kept in sync with the source when data on the website is updated, added, or deleted.
+    - Don't rely on hard coded names - the script should be able to handle added or removed files.
+    - Ensure the script doesn't upload the same file more than once.
 
-The design emphasizes:
-- Automation  
-- Scalability  
-- Event-driven processing  
-- Maintainability  
-- Reproducible infrastructure  
+#### Part 2: APIs
+1. Create a script that will fetch data from [this API](https://honolulu-api.datausa.io/tesseract/data.jsonrecords?cube=acs_yg_total_population_1&drilldowns=Year%2CNation&locale=en&measures=Population).
+   You can read the documentation [here](https://datausa.io/about/api/).
+2. Save the result of this API call as a JSON file in S3.
 
----
+#### Part 3: Data Analytics
+0. Load both the csv file from **Part 1** `pr.data.0.Current` and the json file from **Part 2**
+   as dataframes ([Spark](https://spark.apache.org/docs/1.6.1/api/java/org/apache/spark/sql/DataFrame.html),
+                  [Pyspark](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.sql.DataFrame.html),
+                  [Pandas](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html),
+    
+1. Using the dataframe from the population data API (Part 2),
+   generate the mean and the standard deviation of the annual US population across the years [2013, 2018] inclusive.
 
-## Data Pipeline Process
+2. Using the dataframe from the time-series (Part 1),
+   For every series_id, find the *best year*: the year with the max/largest sum of "value" for all quarters in that year. Generate a report with each series id, the best year for that series, and the summed value for that year.
+   For example, if the table had the following values:
 
-1. **Jupyter Notebook — API Ingestion (Local Sync Version)**  
-   - Uses the **BLS public API** (standard datasets and bulk files)  
-   - Fetches BLS time-series data from  
-     `https://download.bls.gov/pub/time.series/pr/`  
-   - Uses compliant `User-Agent` headers per BLS data access guidelines  
-   - Hash-based change detection to prevent duplicate uploads  
-   - Cleans and formats JSON/CSV prior to upload  
-   - Enhanced sync mode automatically adds, updates, and deletes files in S3  
+    | series_id   | year | period | value |
+    |-------------|------|--------|-------|
+    | PRS30006011 | 1995 | Q01    | 1     |
+    | PRS30006011 | 1995 | Q02    | 2     |
+    | PRS30006011 | 1996 | Q01    | 3     |
+    | PRS30006011 | 1996 | Q02    | 4     |
+    | PRS30006012 | 2000 | Q01    | 0     |
+    | PRS30006012 | 2000 | Q02    | 8     |
+    | PRS30006012 | 2001 | Q01    | 2     |
+    | PRS30006012 | 2001 | Q02    | 3     |
 
-2. **AWS Lambda — API → S3**  
-   Serverless function that retrieves data from public APIs and stores JSON files in Amazon S3.
+    the report would generate the following table:
 
-3. **Jupyter Notebook — Data Processing & Reporting**  
-   Loads raw S3 datasets, cleans them using Pandas, and generates summarized analytical outputs.
+    | series_id   | year | value |
+    |-------------|------|-------|
+    | PRS30006011 | 1996 | 7     |
+    | PRS30006012 | 2000 | 8     |
 
-4. **Infrastructure as Code — AWS CDK**  
-   CDK project that deploys:
-   - S3 buckets  
-   - Lambda functions  
-   - SQS queues  
-   - EventBridge schedules  
-   - IAM roles  
+3. Using both dataframes from Part 1 and Part 2, generate a report that will provide the `value`
+   for `series_id = PRS30006032` and `period = Q01` and the `population` for that given year (if available in the population dataset).
+   The below table shows an example of one row that might appear in the resulting table:
 
-5. **CI/CD Workflow (Optional)**  
-   GitHub Actions workflow for automated CDK deployment on commit.
+    | series_id   | year | period | value | Population |
+    |-------------|------|--------|-------|------------|
+    | PRS30006032 | 2018 | Q01    | 1.9   | 327167439  |
 
----
+    **Hints:** when working with public datasets you sometimes might have to perform some data cleaning first.
+   For example, you might find it useful to perform [trimming](https://stackoverflow.com/questions/35540974/remove-blank-space-from-data-frame-column-values-in-spark) of whitespaces before doing any filtering or joins
 
-## Pipeline Architecture
 
-### Ingest
-- Lambda functions call public APIs such as:
-  - BLS Dataset (Producer Price Index):  
-    `https://download.bls.gov/pub/time.series/pr/`
-  - DataUSA API:  
-    `https://honolulu-api.datausa.io`
-- A local notebook can also ingest and sync large datasets prior to cloud processing.
+4. Submit your analysis, your queries, and the outcome of the reports as a [.ipynb](https://fileinfo.com/extension/ipynb) file.
 
-### Store
-- Amazon S3 stores raw JSON, CSV files, and processed outputs  
-- Data is organized by dataset type and timestamp using lakehouse-style conventions
+### Part 4: Infrastructure as Code & Data Pipeline with AWS CDK
+0. Using [AWS CloudFormation](https://aws.amazon.com/cloudformation/), [AWS CDK](https://aws.amazon.com/cdk/) or [Terraform](https://www.terraform.io/), create a data pipeline that will automate the steps above.
+1. The deployment should include a Lambda function that executes
+   Part 1 and Part 2 (you can combine both in 1 lambda function). The lambda function will be scheduled to run daily.
+2. The deployment should include an SQS queue that will be populated every time the JSON file is written to S3. (Hint: [S3 - Notifications](https://docs.aws.amazon.com/AmazonS3/latest/userguide/NotificationHowTo.html))
+3. For every message on the queue - execute a Lambda function that outputs the reports from Part 3 (just logging the results of the queries would be enough. No .ipynb is required).
 
-### Analyze
-- S3 events trigger processing Lambdas (optionally through SQS)  
-- Data is cleaned, aggregated, and written back to S3
+### Q. What do I have to submit?
+1. Link to data in S3 and source code (Step 1)
+2. Source code (Step 2)
+3. Source code in .ipynb file format and results (Step 3)
+4. Source code of the data pipeline infrastructure (Step 4)
+5. Any README or documentation you feel would help us navigate your quest.
+6. A video will be uploaded to show full understanding of the above process.
 
-### Deploy
-- All infrastructure is created using AWS CDK (Python)  
-- Supports deployment from local environments, AWS CloudShell, or CI/CD pipelines
+### Q. How do I share the submission?
+Your submission should be emailed back to us as one or both of the following:
 
----
+1. A link to a public hosted git repository in your own namespace
+1. A compressed file containing your project directory (zip, tgz, etc). Include the .git sub-directory if you used git.
 
-## Deployment Options
-- Local Jupyter Notebook + Python CDK  
-- AWS CloudShell CDK deployment  
-- GitHub Actions CI/CD (optional)  
+### Q. How do I get around the 403 error when I try to fetch BLS data?
+<details>
+<summary>Hint 1</summary>
+  The BLS data access policies can be found here: https://www.bls.gov/bls/pss.htm
+</details>
+<details>
+<summary>Hint 2</summary>
+  The policy page says:
 
----
+```BLS also reserves the right to block robots that do not contain information that can be used to contact the owner. Blocking may occur in real time.```
 
-## AWS Services Used
-- Amazon S3 — Raw and processed data storage  
-- AWS Lambda — Ingestion and transformation compute  
-- Amazon SQS — Event queue for decoupled processing  
-- Amazon EventBridge — Scheduled API ingestion  
-- AWS CDK (Python) — Infrastructure as Code  
-- AWS IAM — Secure role-based permissions  
+How could you add information to your programmatic access requests to let BLS contact you?
+</details>
+<details>
+<summary>Hint 3</summary>
+  Adding a <code>User-Agent</code> header to your request with contact information will comply with the BLS data policies and allow you to keep accessing their data programmatically.
+</details>
 
----
-## Technologies
-- Python  
-- Pandas  
-- Boto3  
-- AWS Secrets Manager, GitHub Secrets  
-- Public APIs: BLS, DataUSA
-  
-## How the Pipeline Works
-1. Local or Lambda-based ingestion fetches API data and uploads it to S3  
-2. Hash-based sync prevents uploading unchanged files  
-3. S3 events trigger processing Lambdas (optionally via SQS)  
-4. Pandas cleans and summarizes the data  
-5. Outputs are written back to S3 for reporting or dashboard use  
-6. CDK deploys all compute, storage, scheduling, and permissions  
-7. Video demonstration and user documentation (if applicable)
-   
----
-### Enchanced Ideas:
-Use Amazon Redshift and Amazon Athena for SQL queries using data analytics below:
-https://github.com/rearc-data/analytics-quest
+## Future Enhancements
+- Replace the processing Lambda with AWS Glue or AWS Step Functions for complex orchestration. 
+- Publish curated datasets to Amazon Athena or Redshift Serverless for SQL-based analytics. 
+- Add Amazon QuickSight dashboards or Streamlit apps for stakeholder reporting. 
+- Integrate with AWS Lake Formation for advanced governance and fine-grained permissions. 
+- Introduce cost anomaly detection using AWS Budgets and SNS alerts.
+- Use AI as a reference tool but there will be a strong expectation to exhibit the same expertise and understanding from your submission in your interview. 
+
