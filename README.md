@@ -1,121 +1,150 @@
-# AWS Data Engineering Pipeline  
-The following is a top-5 consulting firm’s cloud data engineering intership project challenge. This document intentionally omits any mention of external companies or institutional partnerships, following academic guidelines. The system automatically ingests data, stores and processes it, and produces analytics outputs, all deployed through Infrastructure as Code (AWS CDK in Python). The architecture follows a four-part pattern: ingest → store → analyze → deploy.
-- Scott Schmidt — Illinois State University — Masters CS Final Project for IT494 
-- Updated GitHub Version: https://github.com/ScottySchmidt/AWS-DataEngineer/tree/main
+AWS Data Engineer Pipeline
+The following data engineer system automatically ingests data, stores and processes it, and produces analytics outputs, all deployed through Infrastructure as Code (AWS CDK in Python). The architecture follows a four-part pattern: ingest → store → analyze → deploy. This project is adapted from a top industry data-engineering interview "internship" challenge.
 
--------------
-### Q. So what skills should I have?
-* Data management / data engineering concepts.
-* Programming language (python, java, scala, etc).
-* AWS knowledge (Lambda, SQS, CloudWatch logs).
-* Infrastructure-as-code (Terraform, CloudFormation, etc)
+Scott Schmidt — Illinois State University - Masters Computer Science for IT494
+Updated GitHub Version will be here: https://github.com/ScottySchmidt/AWS-DataEngineer/tree/main
+Project Summary
+This pipeline pulls data from public APIs, stores it in Amazon S3, processes it with AWS Lambda, and produces outputs suitable for analytics and reporting. All components, including compute, storage, permissions, and scheduling, are provisioned automatically using the AWS CDK in Python.
 
-### Q. What do I have to do?
-This quest consists of 4 different parts. Putting all 4 parts together we will have a Data Pipeline architecture.
-- Part 1 and Part 2 will showcase your skills with data management, AWS concepts, and your overall data engineering skillset.
-  The goal is to source data from different places and store it in-house.
-- Part 3 will showcase your data analytics skills. The goal is to find some interesting insights with data.
-- Lastly, Part 4 will put all the pieces together. The goal here is to showcase your experience with automation and AWS services.
--------------
-#### Part 1: AWS S3 & Sourcing Datasets
-1. Republish [this open dataset](https://download.bls.gov/pub/time.series/pr/) in Amazon S3 and share with us a link.
-    - You may run into 403 Forbidden errors as you test accessing this data. There is a way to comply with the BLS data access policies and re-gain access to fetch this data programatically - we have included some hints as to how to do this at the bottom of this README in the Q/A section.
-2. Script this process so the files in the S3 bucket are kept in sync with the source when data on the website is updated, added, or deleted.
-    - Don't rely on hard coded names - the script should be able to handle added or removed files.
-    - Ensure the script doesn't upload the same file more than once.
+Pipeline Architecture
+Part 1: AWS S3 & Sourcing Datasets
+Republish this open dataset in Amazon S3 and share with us a link.
+You may run into 403 Forbidden errors as you test accessing this data. There is a way to comply with the BLS data access policies and re-gain access to fetch this data programatically. The BLS data access policies can be found here: https://www.bls.gov/bls/pss.htm . BLS also reserves the right to block robots that do not contain information that can be used to contact the owner. Blocking may occur in real time. An API key and Adding a User-Agent header to your request with contact information will comply with the BLS data policies and allow you to keep accessing their data programmatically.
+Script this process so the files in the S3 bucket are kept in sync with the source when data on the website is updated, added, or deleted.
+Don't rely on hard coded names - the script should be able to handle added or removed files.
+Ensure the script doesn't upload the same file more than once.
+Part 2: APIs
+Create a script that will fetch data from this API. You can read the documentation here.
+Save the result of this API call as a JSON file in S3.
+Part 3: Data Analytics
+Load both the csv file from Part 1 pr.data.0.Current and the json file from Part 2 as dataframes (Spark, Pyspark, Pandas, Koalas, etc).
 
-#### Part 2: APIs
-1. Create a script that will fetch data from [this API](https://honolulu-api.datausa.io/tesseract/data.jsonrecords?cube=acs_yg_total_population_1&drilldowns=Year%2CNation&locale=en&measures=Population).
-   You can read the documentation [here](https://datausa.io/about/api/).
-2. Save the result of this API call as a JSON file in S3.
+Using the dataframe from the population data API (Part 2), generate the mean and the standard deviation of the annual US population across the years [2013, 2018] inclusive.
 
-#### Part 3: Data Analytics
-0. Load both the csv file from **Part 1** `pr.data.0.Current` and the json file from **Part 2**
-   as dataframes ([Spark](https://spark.apache.org/docs/1.6.1/api/java/org/apache/spark/sql/DataFrame.html),
-                  [Pyspark](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.sql.DataFrame.html),
-                  [Pandas](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html),
-    
-1. Using the dataframe from the population data API (Part 2),
-   generate the mean and the standard deviation of the annual US population across the years [2013, 2018] inclusive.
+Using the dataframe from the time-series (Part 1), For every series_id, find the best year: the year with the max/largest sum of "value" for all quarters in that year. Generate a report with each series id, the best year for that series, and the summed value for that year. For example, if the table had the following values:
 
-2. Using the dataframe from the time-series (Part 1),
-   For every series_id, find the *best year*: the year with the max/largest sum of "value" for all quarters in that year. Generate a report with each series id, the best year for that series, and the summed value for that year.
-   For example, if the table had the following values:
+series_id	year	period	value
+PRS30006011	1995	Q01	1
+PRS30006011	1995	Q02	2
+PRS30006011	1996	Q01	3
+PRS30006011	1996	Q02	4
+PRS30006012	2000	Q01	0
+PRS30006012	2000	Q02	8
+PRS30006012	2001	Q01	2
+PRS30006012	2001	Q02	3
+the report would generate the following table:
 
-    | series_id   | year | period | value |
-    |-------------|------|--------|-------|
-    | PRS30006011 | 1995 | Q01    | 1     |
-    | PRS30006011 | 1995 | Q02    | 2     |
-    | PRS30006011 | 1996 | Q01    | 3     |
-    | PRS30006011 | 1996 | Q02    | 4     |
-    | PRS30006012 | 2000 | Q01    | 0     |
-    | PRS30006012 | 2000 | Q02    | 8     |
-    | PRS30006012 | 2001 | Q01    | 2     |
-    | PRS30006012 | 2001 | Q02    | 3     |
+series_id	year	value
+PRS30006011	1996	7
+PRS30006012	2000	8
+Part 3: Data Analytics
+Load both the csv file from Part 1 pr.data.0.Current and the json file from Part 2 as dataframes (Spark, Pyspark, Pandas
 
-    the report would generate the following table:
+Using the dataframe from the population data API (Part 2), generate the mean and the standard deviation of the annual US population across the years [2013, 2018] inclusive.
 
-    | series_id   | year | value |
-    |-------------|------|-------|
-    | PRS30006011 | 1996 | 7     |
-    | PRS30006012 | 2000 | 8     |
+Using the dataframe from the time-series (Part 1), For every series_id, find the best year: the year with the max/largest sum of "value" for all quarters in that year. Generate a report with each series id, the best year for that series, and the summed value for that year. For example, if the table had the following values:
 
-3. Using both dataframes from Part 1 and Part 2, generate a report that will provide the `value`
-   for `series_id = PRS30006032` and `period = Q01` and the `population` for that given year (if available in the population dataset).
-   The below table shows an example of one row that might appear in the resulting table:
+series_id	year	period	value
+PRS30006011	1995	Q01	1
+PRS30006011	1995	Q02	2
+PRS30006011	1996	Q01	3
+PRS30006011	1996	Q02	4
+PRS30006012	2000	Q01	0
+PRS30006012	2000	Q02	8
+PRS30006012	2001	Q01	2
+PRS30006012	2001	Q02	3
+the report would generate the following table:
 
-    | series_id   | year | period | value | Population |
-    |-------------|------|--------|-------|------------|
-    | PRS30006032 | 2018 | Q01    | 1.9   | 327167439  |
+series_id	year	value
+PRS30006011	1996	7
+PRS30006012	2000	8
+Part 3: Data Analytics
+0. Load the data
 
-    **Hints:** when working with public datasets you sometimes might have to perform some data cleaning first.
-   For example, you might find it useful to perform [trimming](https://stackoverflow.com/questions/35540974/remove-blank-space-from-data-frame-column-values-in-spark) of whitespaces before doing any filtering or joins
+Load both:
 
+the CSV file from Part 1: pr.data.0.Current
+the JSON file from Part 2
+as dataframes using one of the following:
 
-4. Submit your analysis, your queries, and the outcome of the reports as a [.ipynb](https://fileinfo.com/extension/ipynb) file.
+Spark DataFrame
+PySpark DataFrame
+Pandas DataFrame
+1. Population statistics
 
-### Part 4: Infrastructure as Code & Data Pipeline with AWS CDK
-0. Using [AWS CloudFormation](https://aws.amazon.com/cloudformation/), [AWS CDK](https://aws.amazon.com/cdk/) or [Terraform](https://www.terraform.io/), create a data pipeline that will automate the steps above.
-1. The deployment should include a Lambda function that executes
-   Part 1 and Part 2 (you can combine both in 1 lambda function). The lambda function will be scheduled to run daily.
-2. The deployment should include an SQS queue that will be populated every time the JSON file is written to S3. (Hint: [S3 - Notifications](https://docs.aws.amazon.com/AmazonS3/latest/userguide/NotificationHowTo.html))
-3. For every message on the queue - execute a Lambda function that outputs the reports from Part 3 (just logging the results of the queries would be enough. No .ipynb is required).
--------------
-### Q. What do I have to submit?
-1. Link to data in S3 and source code (Step 1)
-2. Source code (Step 2)
-3. Source code in .ipynb file format and results (Step 3)
-4. Source code of the data pipeline infrastructure (Step 4)
-5. Any README or documentation you feel would help us navigate your quest.
-6. A video will be uploaded to show full understanding of the above process.
+Using the dataframe from the population data API (Part 2), compute:
 
-### Q. How do I share the submission?
-Your submission should be emailed back to us as one or both of the following:
+the mean
+the standard deviation
+of the annual U.S. population for the years 2013–2018 (inclusive).
 
-1. A link to a public hosted git repository in your own namespace
-1. A compressed file containing your project directory (zip, tgz, etc). Include the .git sub-directory if you used git.
+2. Best year by series
 
-### Q. How do I get around the 403 error when I try to fetch BLS data?
-<details>
-<summary>Hint 1</summary>
-  The BLS data access policies can be found here: https://www.bls.gov/bls/pss.htm
-</details>
-<details>
-<summary>Hint 2</summary>
-  The policy page says:
+Using the time-series dataframe (Part 1):
 
-```BLS also reserves the right to block robots that do not contain information that can be used to contact the owner. Blocking may occur in real time.```
+For each series_id, find the best year, defined as the year with the maximum total sum of value across all quarters.
 
-How could you add information to your programmatic access requests to let BLS contact you?
-</details>
-<details>
-<summary>Hint 3</summary>
-  Adding a <code>User-Agent</code> header to your request with contact information will comply with the BLS data policies and allow you to keep accessing their data programmatically.
-</details>
+Generate a report with:
 
-## Future Enhancements
-- Replace the processing Lambda with AWS Glue or AWS Step Functions for complex orchestration. 
-- Publish curated datasets to Amazon Athena or Redshift Serverless for SQL-based analytics.  
-- Introduce cost anomaly detection using AWS Budgets and SNS alerts.
-- Deploy methods using CI/CD. 
-- Use AI as a reference tool but there will be an expectation to exhibit the same expertise and understanding. 
+series_id
+best year
+summed value for that year
+Example input:
+
+series_id	year	period	value
+PRS30006011	1995	Q01	1
+PRS30006011	1995	Q02	2
+PRS30006011	1996	Q01	3
+PRS30006011	1996	Q02	4
+PRS30006012	2000	Q01	0
+PRS30006012	2000	Q02	8
+PRS30006012	2001	Q01	2
+PRS30006012	2001	Q02	3
+Expected output:
+
+series_id	year	value
+PRS30006011	1996	7
+PRS30006012	2000	8
+3. Join population and series data
+
+Using both dataframes from Parts 1 and 2, generate a report that includes:
+
+value for series_id = PRS30006032
+period = Q01
+population for the corresponding year (if available)
+Example output row:
+
+series_id	year	period	value	Population
+PRS30006032	2018	Q01	1.9	327167439
+Hints
+
+When working with public datasets, data cleaning may be required.
+For example, you may need to trim whitespace before filtering or joining:
+
+Trimming whitespace in Spark
+Submit your analysis, your queries, and the outcome of the reports as a .ipynb file.
+How the Pipeline Works
+Local or Lambda-based ingestion fetches API data and uploads it to S3
+Hash-based sync prevents uploading unchanged files
+S3 events trigger processing Lambdas (optionally via SQS)
+Pandas cleans and summarizes the data
+Outputs are written back to S3 for reporting or dashboard use
+CDK deploys all compute, storage, scheduling, and permissions
+Video demonstration and user documentation (if applicable)
+Document use AI as a reference tool and exhibit full understanding.
+AWS Infrastructure
+Amazon S3 — Raw and processed data storage
+AWS Lambda — Ingestion and transformation compute
+Amazon SQS — Event queue for decoupled processing
+Amazon EventBridge — Scheduled API ingestion
+AWS CDK (Python) — Infrastructure as Code
+AWS IAM — Secure role-based permissions
+Technologies
+Python using Pandas and Boto3
+AWS Secrets Manager, GitHub Secrets
+Public APIs: BLS, DataUSA
+Enhanced Ideas
+CI/CD Workflow (Optional) GitHub Actions workflow for automated CDK deployment on commit.
+Use Amazon Redshift and Amazon Athena for SQL queries for the below: https://github.com/rearc-data/analytics-quest
+Replace the processing Lambda with AWS Glue or AWS Step Functions for complex orchestration.
+Introduce cost anomaly detection using AWS Budgets and SNS alerts. 
