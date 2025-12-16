@@ -7,11 +7,16 @@ The following data engineer system automatically ingests data, stores and proces
 This pipeline pulls data from public APIs, stores it in Amazon S3, processes it with AWS Lambda, and produces outputs suitable for analytics and reporting. All components, including compute, storage, permissions, and scheduling, are provisioned automatically using the AWS CDK in Python.
 
 ---
-# Pipeline Architecture
+### Q. What do I have to do?
+This quest consists of 4 different parts. Putting all 4 parts together we will have a Data Pipeline architecture.
+- Part 1 and Part 2 will showcase your skills with data management, AWS concepts, and your overall data engineering skillset.
+  The goal is to source data from different places and store it in-house.
+- Part 3 will showcase your data analytics skills. The goal is to find some interesting insights with data.
+- Lastly, Part 4 will put all the pieces together. The goal here is to showcase your experience with automation and AWS services.
 
 #### Part 1: AWS S3 & Sourcing Datasets
 1. Republish [this open dataset](https://download.bls.gov/pub/time.series/pr/) in Amazon S3 and share with us a link.
-    - You may run into 403 Forbidden errors as you test accessing this data. There is a way to comply with the BLS data access policies and re-gain access to fetch this data programatically. The BLS data access policies can be found here: https://www.bls.gov/bls/pss.htm . BLS also reserves the right to block robots that do not contain information that can be used to contact the owner. Blocking may occur in real time. An API key and  Adding a <code>User-Agent</code> header to your request with contact information will comply with the BLS data policies and allow you to keep accessing their data programmatically. 
+    - You may run into 403 Forbidden errors as you test accessing this data. There is a way to comply with the BLS data access policies and re-gain access to fetch this data programatically - we have included some hints as to how to do this at the bottom of this README in the Q/A section.
 2. Script this process so the files in the S3 bucket are kept in sync with the source when data on the website is updated, added, or deleted.
     - Don't rely on hard coded names - the script should be able to handle added or removed files.
     - Ensure the script doesn't upload the same file more than once.
@@ -54,85 +59,26 @@ This pipeline pulls data from public APIs, stores it in Amazon S3, processes it 
     | PRS30006011 | 1996 | 7     |
     | PRS30006012 | 2000 | 8     |
 
-#### Part 3: Data Analytics
-**0. Load the data**
+3. Using both dataframes from Part 1 and Part 2, generate a report that will provide the `value`
+   for `series_id = PRS30006032` and `period = Q01` and the `population` for that given year (if available in the population dataset).
+   The below table shows an example of one row that might appear in the resulting table:
 
-Load both:
-- the CSV file from **Part 1**: `pr.data.0.Current`
-- the JSON file from **Part 2**
+    | series_id   | year | period | value | Population |
+    |-------------|------|--------|-------|------------|
+    | PRS30006032 | 2018 | Q01    | 1.9   | 327167439  |
 
-as dataframes using one of the following:
-- [PySpark DataFrame](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.sql.DataFrame.html)
-- [Pandas DataFrame](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html)
-
----
-
-**1. Population statistics**
-
-Using the dataframe from the population data API (**Part 2**), compute:
-- the **mean**
-- the **standard deviation**
-
-of the annual U.S. population for the years **2013–2018 (inclusive)**.
-
----
-
-**2. Best year by series**
-
-Using the time-series dataframe (**Part 1**):
-For each `series_id`, find the **best year**, defined as the year with the **maximum total sum of `value` across all quarters**.
-
-Generate a report with:
-- `series_id`
-- best `year`
-- summed `value` for that year
-
-**Example input:**
-
-| series_id   | year | period | value |
-|-------------|------|--------|-------|
-| PRS30006011 | 1995 | Q01    | 1     |
-| PRS30006011 | 1995 | Q02    | 2     |
-| PRS30006011 | 1996 | Q01    | 3     |
-| PRS30006011 | 1996 | Q02    | 4     |
-| PRS30006012 | 2000 | Q01    | 0     |
-| PRS30006012 | 2000 | Q02    | 8     |
-| PRS30006012 | 2001 | Q01    | 2     |
-| PRS30006012 | 2001 | Q02    | 3     |
-
-**Expected output:**
-
-| series_id   | year | value |
-|-------------|------|-------|
-| PRS30006011 | 1996 | 7     |
-| PRS30006012 | 2000 | 8     |
-
----
-
-**3. Join population and series data**
-
-Using **both** dataframes from Parts 1 and 2, generate a report that includes:
-- `value` for `series_id = PRS30006032`
-- `period = Q01`
-- `population` for the corresponding year (if available)
-
-**Example output row:**
-
-| series_id   | year | period | value | Population |
-|-------------|------|--------|-------|------------|
-| PRS30006032 | 2018 | Q01    | 1.9   | 327167439  |
-
----
-
-**Hints**
-
-When working with public datasets, data cleaning may be required.  
-For example, you may need to trim whitespace before filtering or joining:
-
-- [Trimming whitespace in Spark](https://stackoverflow.com/questions/35540974/remove-blank-space-from-data-frame-column-values-in-spark)
+    **Hints:** when working with public datasets you sometimes might have to perform some data cleaning first.
+   For example, you might find it useful to perform [trimming](https://stackoverflow.com/questions/35540974/remove-blank-space-from-data-frame-column-values-in-spark) of whitespaces before doing any filtering or joins
 
 
+4. Submit your analysis, your queries, and the outcome of the reports as a [.ipynb](https://fileinfo.com/extension/ipynb) file.
 
+#### Part 4: Infrastructure as Code & Data Pipeline with AWS CDK
+0. Using [AWS CloudFormation](https://aws.amazon.com/cloudformation/), [AWS CDK](https://aws.amazon.com/cdk/) or [Terraform](https://www.terraform.io/), create a data pipeline that will automate the steps above.
+1. The deployment should include a Lambda function that executes
+   Part 1 and Part 2 (you can combine both in 1 lambda function). The lambda function will be scheduled to run daily.
+2. The deployment should include an SQS queue that will be populated every time the JSON file is written to S3. (Hint: [S3 - Notifications](https://docs.aws.amazon.com/AmazonS3/latest/userguide/NotificationHowTo.html))
+3. For every message on the queue - execute a Lambda function that outputs the reports from Part 3 (just logging the results of the queries would be enough. No .ipynb is required).
 4. Submit your analysis, your queries, and the outcome of the reports as a [.ipynb](https://fileinfo.com/extension/ipynb) file.
 
 
